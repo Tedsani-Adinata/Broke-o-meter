@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+  <meta content="mobile_tab" name="shell-type"/>
+  <title>Broke-o-meter - Pencatat Boncos Harian</title>
+  <!-- Sinkronisasi tema seketika sebelum frame pertama di-render (mencegah flash putih saat mode gelap) -->
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('broke_o_meter_theme');
+        var dark = (t === 'dark') || (t !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch(e) {}
+    })();
+  </script>
+  <noscript><style>#mobile-viewport { opacity: 1 !important; }</style></noscript>
+  <!-- Bundled local libraries (Offline-first, Stage 2 & 3) -->
+  <script src="lib/motion.js"></script>
+  <script src="lib/jspdf.umd.min.js"></script>
+  <!-- Compiled local Tailwind CSS with local fonts (Offline-first) -->
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body class="flex justify-center min-h-screen">
+
+  <!-- Mobile Viewport Container (Max 430px, centered, gray backdrop on desktop) -->
+  <div id="mobile-viewport" class="flex flex-col min-h-screen bg-surface font-body-md text-on-surface opacity-0 transition-opacity duration-300 ease-out">
+
+    <!-- TOP HEADER -->
+    <header class="mobile-header-fixed bg-surface/85 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+      <div class="h-16 px-margin flex items-center justify-between gap-space-sm">
+        <!-- Logo and Active Tab Title / Back button -->
+        <div class="flex items-center gap-space-sm min-w-0" id="header-brand-group">
+          <!-- Back button (visible only in Pengaturan view) -->
+          <button id="btn-back-settings" aria-label="Kembali" class="w-10 h-10 -ml-1.5 hidden items-center justify-center rounded-full hover:bg-surface-container active:scale-95 text-on-surface transition-all flex-shrink-0" onclick="if(window.appState && window.appState.lastActiveTab){navigateToTab(window.appState.lastActiveTab)}else{navigateToTab('hari-ini')}">
+            <span class="material-symbols-outlined text-[24px]">arrow_back</span>
+          </button>
+          
+          <img id="header-logo-img" alt="Broke-o-meter Logo" class="h-8 w-8 object-contain flex-shrink-0 rounded-lg" width="32" height="32" src="logo.png"/>
+          
+          <div class="flex flex-col min-w-0 justify-center" id="header-title-box">
+            <span class="font-headline-md text-headline-md tracking-tight text-on-surface whitespace-nowrap" id="header-app-title">Broke-o-meter</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase truncate hidden" id="header-tab-subtitle"></span>
+          </div>
+        </div>
+
+        <!-- Right action icons -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <!-- Quick Theme Toggle (Stage 2) -->
+          <button id="header-btn-theme-toggle" aria-label="Ganti Tema" class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container/60 hover:bg-surface-container active:scale-95 text-on-surface-variant transition-all flex-shrink-0" onclick="toggleQuickTheme(event)">
+            <span class="material-symbols-outlined text-[20px]" id="theme-toggle-icon">dark_mode</span>
+          </button>
+          <button id="header-btn-settings" aria-label="Pengaturan" class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container/60 hover:bg-surface-container active:scale-95 text-on-surface-variant transition-all flex-shrink-0" onclick="navigateToTab('pengaturan')">
+            <span class="material-symbols-outlined text-[20px]">settings</span>
+          </button>
+          <button id="header-user-avatar-btn" aria-label="Profil Pengguna" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center overflow-hidden border-2 border-surface active:scale-95 transition-all cursor-pointer flex-shrink-0 shadow-sm" onclick="navigateToTab('pengaturan')">
+            <img id="header-avatar-img" class="w-full h-full object-cover hidden" alt="Avatar"/>
+            <span id="header-avatar-initial" class="font-label-md font-bold text-on-primary"></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- TAB 1: HARI INI (Main View) -->
+    <main id="view-hari-ini" class="tab-view flex flex-col relative w-full pt-16 pb-28 bg-surface min-h-screen">
+      <div class="flex flex-col w-full px-margin space-y-space-lg">
+        
+        <!-- Greeting & Date -->
+        <div class="flex flex-col space-y-space-xs pt-space-md">
+          <div class="flex items-center">
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" id="today-date-str"></span>
+          </div>
+          <h1 class="font-headline-md text-headline-md text-on-surface tracking-tight" id="greeting-title">
+            ...
+          </h1>
+        </div>
+
+        <!-- Total Hari Ini Hero Card -->
+        <div class="rounded-lg bg-surface-container-lowest p-space-lg shadow-sm">
+          <div class="flex flex-col space-y-space-sm">
+            <div class="flex items-center justify-between">
+              <span class="font-label-md text-label-md text-on-surface-variant font-semibold">TOTAL HARI INI</span>
+              <span class="material-symbols-outlined text-primary text-[20px]">account_balance_wallet</span>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="font-headline-xl-mobile text-headline-xl-mobile text-primary tracking-tight" id="display-total" data-current-num="0">
+                Rp 0
+              </span>
+            </div>
+            <div class="w-full bg-surface-container rounded-full h-2.5 overflow-hidden my-1">
+              <div id="today-progress-bar" class="bg-primary h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <div class="flex items-start gap-2 pt-1">
+              <span class="text-base leading-none">💸</span>
+              <p class="font-body-sm text-body-sm text-on-surface-variant" id="today-quote"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Add Section (Tambah Cepat) -->
+        <div class="rounded-lg bg-surface-container-lowest p-space-lg shadow-sm space-y-space-md">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed">
+              <span class="material-symbols-outlined text-[16px]">bolt</span>
+            </div>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Tambah Cepat</h2>
+          </div>
+
+          <!-- Input Nama Barang -->
+          <div class="space-y-space-sm">
+            <label class="block font-label-md text-label-md text-on-surface font-semibold" for="item-name">Nama Barang</label>
+            <div class="relative">
+              <input class="w-full h-12 px-4 rounded bg-surface-container text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:bg-surface-container-high transition-all" id="item-name" placeholder="Misal: Kopi susu gula aren" type="text"/>
+            </div>
+          </div>
+
+          <!-- Input Harga -->
+          <div class="space-y-space-sm">
+            <label class="block font-label-md text-label-md text-on-surface font-semibold" for="item-price">Harga</label>
+            <div class="relative flex items-center">
+              <span class="absolute left-4 font-headline-sm text-headline-sm text-on-surface-variant">Rp</span>
+              <input class="w-full h-12 pl-12 pr-4 rounded bg-surface-container text-on-surface font-headline-sm text-headline-sm placeholder:text-outline focus:outline-none focus:bg-surface-container-high transition-all" id="item-price" inputmode="numeric" placeholder="0" type="number"/>
+            </div>
+          </div>
+
+          <!-- Kategori Chips -->
+          <div class="space-y-space-sm">
+            <label class="block font-label-md text-label-md text-on-surface font-semibold">Kategori</label>
+            <div class="grid grid-cols-2 gap-2" id="category-chips">
+              <button class="cat-chip flex items-center justify-center gap-1.5 h-11 px-3 rounded-full bg-primary text-on-primary font-label-md text-label-md shadow-sm active:scale-95 transition-all" data-cat="makan" type="button">
+                <span>🍜</span> Makan
+              </button>
+              <button class="cat-chip flex items-center justify-center gap-1.5 h-11 px-3 rounded-full bg-surface-container text-on-surface font-label-md text-label-md active:scale-95 transition-all" data-cat="minum" type="button">
+                <span>🧋</span> Minum
+              </button>
+              <button class="cat-chip flex items-center justify-center gap-1.5 h-11 px-3 rounded-full bg-surface-container text-on-surface font-label-md text-label-md active:scale-95 transition-all" data-cat="transport" type="button">
+                <span>🛵</span> Transport
+              </button>
+              <button class="cat-chip flex items-center justify-center gap-1.5 h-11 px-3 rounded-full bg-surface-container text-on-surface font-label-md text-label-md active:scale-95 transition-all" data-cat="lainnya" type="button">
+                <span>✨</span> Lainnya
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button class="w-full h-13 py-3.5 rounded-full bg-primary-container text-on-primary font-label-lg text-label-lg tracking-wide uppercase shadow-md hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2" id="btn-simpan" type="button">
+            <span class="material-symbols-outlined text-[20px]">add_circle</span>
+            <span>Simpan Catatan</span>
+          </button>
+        </div>
+
+        <!-- Daftar Pengeluaran Hari Ini -->
+        <div class="space-y-space-sm">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Catatan Hari Ini</h2>
+            <span class="font-label-sm text-label-sm text-on-surface-variant" id="entry-count-badge">(0 pengeluaran)</span>
+          </div>
+
+          <div class="flex flex-col gap-2" id="transaction-list">
+            <!-- Diisi secara dinamis oleh app.js / storage -->
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- TAB 2: RIWAYAT -->
+    <main id="view-riwayat" class="tab-view hidden flex-col relative w-full pt-16 pb-28 bg-surface min-h-screen">
+      <div class="flex flex-col w-full relative">
+        <!-- Top Utility Bar: Search & Filter Chips -->
+        <div class="px-margin pt-space-sm pb-space-md flex flex-col gap-space-sm">
+          <!-- Search Bar with Tactile Inset -->
+          <div class="relative flex items-center w-full">
+            <div class="absolute left-3.5 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[20px]">search</span>
+            </div>
+            <input class="w-full h-12 pl-10 pr-10 rounded-full bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/70 font-body-md text-body-md shadow-[0_2px_8px_rgba(43,40,37,0.04)] focus:outline-none focus:ring-0 active:bg-surface-container-lowest transition-all" id="history-search-input" oninput="filterHistoryTransactions()" placeholder="Cari barang..." type="text" value=""/>
+            <button aria-label="Bersihkan pencarian" class="absolute right-3 w-8 h-8 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container active:scale-90 transition-all opacity-60 hover:opacity-100" id="clear-search-btn" onclick="const inp = document.getElementById('history-search-input'); inp.value = ''; filterHistoryTransactions(); inp.focus();" type="button">
+              <span class="material-symbols-outlined text-[18px]">cancel</span>
+            </button>
+          </div>
+
+          <!-- Quick Action Ribbon & PDF Export Button -->
+          <div class="flex items-center justify-between gap-space-sm pt-space-xs">
+            <div class="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar" id="history-filter-chips">
+              <button class="history-chip px-3.5 py-1.5 rounded-full bg-on-surface text-surface text-label-sm font-label-sm shadow-sm flex items-center gap-1 active:scale-95 transition-all" data-cat="all" type="button">
+                <span>Semua</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-primary-container inline-block"></span>
+              </button>
+              <button class="history-chip px-3.5 py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant hover:text-on-surface text-label-sm font-label-sm shadow-[0_2px_6px_rgba(0,0,0,0.02)] active:scale-95 transition-all" data-cat="makan" type="button">
+                Makan
+              </button>
+              <button class="history-chip px-3.5 py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant hover:text-on-surface text-label-sm font-label-sm shadow-[0_2px_6px_rgba(0,0,0,0.02)] active:scale-95 transition-all" data-cat="minum" type="button">
+                Minum
+              </button>
+              <button class="history-chip px-3.5 py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant hover:text-on-surface text-label-sm font-label-sm shadow-[0_2px_6px_rgba(0,0,0,0.02)] active:scale-95 transition-all" data-cat="transport" type="button">
+                Transport
+              </button>
+              <button class="history-chip px-3.5 py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant hover:text-on-surface text-label-sm font-label-sm shadow-[0_2px_6px_rgba(0,0,0,0.02)] active:scale-95 transition-all" data-cat="lainnya" type="button">
+                Lainnya
+              </button>
+            </div>
+            <!-- Unduh PDF Action Trigger -->
+            <button aria-label="Unduh Laporan PDF" class="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-surface-container-high text-primary hover:bg-primary-fixed active:scale-95 transition-all shadow-[0_2px_8px_rgba(43,40,37,0.03)]" id="open-pdf-modal" onclick="openPdfModal()" type="button">
+              <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+              <span class="font-label-sm text-label-sm font-bold tracking-wide">Unduh PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- History Ledger: Grouped by Day Cards (Direncanakan & dirender dinamis dari app.js) -->
+        <div class="px-margin flex flex-col gap-space-md pb-space-lg" id="history-ledger-container">
+          <!-- Diisi dinamis oleh app.js berdasarkan data dari storage -->
+        </div>
+      </div>
+    </main>
+
+    <!-- TAB 3: RINGKASAN -->
+    <main id="view-ringkasan" class="tab-view hidden flex-col relative w-full pt-16 pb-28 bg-surface min-h-screen">
+      <div class="flex flex-col w-full px-margin pb-6 gap-space-lg">
+        
+        <!-- Month Selector Pill -->
+        <div class="flex items-center justify-between bg-surface-container-low p-1.5 rounded-full shadow-sm mt-2">
+          <button aria-label="Bulan sebelumnya" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all" id="prev-month-btn">
+            <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+          </button>
+          <div class="flex items-center gap-2 px-3 py-1 bg-surface-container-lowest rounded-full shadow-sm">
+            <span class="material-symbols-outlined text-primary text-[18px]">calendar_month</span>
+            <span class="font-label-lg text-label-lg text-on-surface" id="current-month-label">Oktober 2026</span>
+          </div>
+          <button aria-label="Bulan berikutnya" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all" id="next-month-btn">
+            <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+          </button>
+        </div>
+
+        <!-- Broke-o-meter Hero Gauge Card -->
+        <div class="relative overflow-hidden bg-surface-container-lowest rounded-lg p-space-lg shadow-sm flex flex-col gap-space-md">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[22px]">speed</span>
+              <span class="font-headline-sm text-headline-sm text-on-surface">Status Keuangan</span>
+            </div>
+            <span class="px-3 py-1 rounded-full bg-primary-container text-on-primary font-label-sm text-label-sm uppercase tracking-wider" id="summary-gauge-badge">
+              Lumayan Boncos 📉
+            </span>
+          </div>
+          <!-- Gauge Visualization -->
+          <div class="flex flex-col gap-2 pt-1">
+            <div class="relative w-full h-4 bg-surface-container rounded-full overflow-hidden flex">
+              <div class="h-full bg-secondary transition-all duration-700" style="width: 30%;" title="Aman"></div>
+              <div class="h-full bg-tertiary-fixed-dim transition-all duration-700" style="width: 35%;" title="Waspada"></div>
+              <div class="h-full bg-primary-container transition-all duration-700" style="width: 35%;" title="Kritis"></div>
+              <!-- Pointer Needle -->
+              <div class="absolute top-0 bottom-0 w-1.5 bg-on-surface rounded-full shadow-md -ml-0.5 transition-all duration-500" id="summary-gauge-needle" style="left: 10%;"></div>
+            </div>
+            <div class="flex justify-between font-label-sm text-label-sm text-on-surface-variant px-0.5">
+              <span>Aman Terkendali</span>
+              <span class="font-bold text-primary">Boncos Tipis</span>
+              <span>Makan Promag</span>
+            </div>
+          </div>
+          <!-- Humorous Advice Box -->
+          <div class="flex items-start gap-3 bg-surface-container-low p-3.5 rounded-DEFAULT">
+            <div class="w-8 h-8 rounded-full bg-tertiary-fixed flex items-center justify-center flex-shrink-0 text-on-tertiary-fixed">
+              <span class="material-symbols-outlined text-[18px]">lightbulb</span>
+            </div>
+            <div class="flex flex-col min-w-0">
+              <span class="font-label-md text-label-md text-on-surface font-semibold">Petuah Dompet Hari Ini:</span>
+              <p class="font-body-md text-body-md text-on-surface-variant mt-0.5" id="summary-advice-text">
+                "Pertahankan saldo ini, masa depan cerah menantimu!"
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Primary Metric Cards -->
+        <div class="grid grid-cols-1 gap-space-md">
+          <!-- Card 1: Total Minggu Ini -->
+          <div class="bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex items-center justify-between">
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center gap-1.5">
+                <span class="font-label-md text-label-md text-on-surface-variant">Total Minggu Ini</span>
+                <span class="px-2 py-0.5 bg-surface-container rounded-full font-label-sm text-label-sm text-on-surface-variant">Senin - Minggu</span>
+              </div>
+              <span class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface tracking-tight" id="summary-week-total">Rp 0</span>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center text-primary flex-shrink-0">
+              <span class="material-symbols-outlined text-[24px]">date_range</span>
+            </div>
+          </div>
+          <!-- Card 2: Total Bulan Ini -->
+          <div class="bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="font-label-md text-label-md text-on-surface-variant">Total Pengeluaran Bulan Ini</span>
+              <span class="material-symbols-outlined text-primary-container text-[20px]">warning</span>
+            </div>
+            <div class="flex items-baseline justify-between flex-wrap gap-2">
+              <span class="font-headline-xl-mobile text-headline-xl-mobile text-primary tracking-tight" id="summary-month-total">Rp 0</span>
+            </div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-error-container text-on-error-container self-start" id="summary-month-level-badge">
+              <span class="material-symbols-outlined text-[14px]">local_fire_department</span>
+              <span class="font-label-sm text-label-sm font-bold">Level boncos: Aman Jaya</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Breakdown Section -->
+        <div class="flex flex-col gap-space-md bg-surface-container-lowest rounded-lg p-space-lg shadow-sm">
+          <div class="flex items-center justify-between">
+            <div class="flex flex-col">
+              <h2 class="font-headline-sm text-headline-sm text-on-surface">Rincian Kategori</h2>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">Kemana larinya uang sakumu bulan ini?</span>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+              <span class="material-symbols-outlined text-[18px]">tune</span>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-space-lg pt-1">
+            <!-- 1. Makan -->
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center text-base flex-shrink-0">
+                    🍜
+                  </div>
+                  <div class="flex flex-col min-w-0">
+                    <span class="font-label-lg text-label-lg text-on-surface truncate">Makan &amp; Kuliner</span>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant" id="cat-pct-makan">0% dari total</span>
+                  </div>
+                </div>
+                <span class="font-label-lg text-label-lg text-on-surface font-bold" id="cat-total-makan">Rp 0</span>
+              </div>
+              <div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+                <div class="h-full bg-primary-container rounded-full transition-all duration-500" id="cat-bar-makan" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- 2. Minum -->
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-9 h-9 rounded-full bg-tertiary-fixed flex items-center justify-center text-base flex-shrink-0">
+                    🧋
+                  </div>
+                  <div class="flex flex-col min-w-0">
+                    <span class="font-label-lg text-label-lg text-on-surface truncate">Minum &amp; Kopi Santai</span>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant" id="cat-pct-minum">0% dari total</span>
+                  </div>
+                </div>
+                <span class="font-label-lg text-label-lg text-on-surface font-bold" id="cat-total-minum">Rp 0</span>
+              </div>
+              <div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+                <div class="h-full bg-tertiary-fixed-dim rounded-full transition-all duration-500" id="cat-bar-minum" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- 3. Transport -->
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-9 h-9 rounded-full bg-secondary-fixed flex items-center justify-center text-base flex-shrink-0">
+                    🛵
+                  </div>
+                  <div class="flex flex-col min-w-0">
+                    <span class="font-label-lg text-label-lg text-on-surface truncate">Transportasi Harian</span>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant" id="cat-pct-transport">0% dari total</span>
+                  </div>
+                </div>
+                <span class="font-label-lg text-label-lg text-on-surface font-bold" id="cat-total-transport">Rp 0</span>
+              </div>
+              <div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+                <div class="h-full bg-secondary rounded-full transition-all duration-500" id="cat-bar-transport" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- 4. Lainnya -->
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-base flex-shrink-0">
+                    ✨
+                  </div>
+                  <div class="flex flex-col min-w-0">
+                    <span class="font-label-lg text-label-lg text-on-surface truncate">Khilaf Lain-lain</span>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant" id="cat-pct-lainnya">0% dari total</span>
+                  </div>
+                </div>
+                <span class="font-label-lg text-label-lg text-on-surface font-bold" id="cat-total-lainnya">Rp 0</span>
+              </div>
+              <div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+                <div class="h-full bg-outline rounded-full transition-all duration-500" id="cat-bar-lainnya" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- TAB 4: PENGATURAN -->
+    <main id="view-pengaturan" class="tab-view hidden flex-col relative w-full pt-16 pb-28 bg-surface min-h-screen">
+      <div class="flex flex-col w-full px-margin pb-10 gap-space-lg">
+        
+        <!-- User Profile Customization Card -->
+        <div class="w-full bg-surface-container-lowest rounded-lg p-space-lg shadow-sm flex flex-col items-center text-center mt-2 relative">
+          <!-- Avatar Container with Camera Badge -->
+          <div class="relative group cursor-pointer" onclick="document.getElementById('profile-photo-input').click()">
+            <div id="settings-avatar-container" class="w-20 h-20 rounded-full bg-primary flex items-center justify-center overflow-hidden border-2 border-primary/20 shadow-md transition-all group-hover:ring-4 group-hover:ring-primary/20">
+              <img id="settings-avatar-img" class="w-full h-full object-cover hidden" alt="Foto Profil"/>
+              <span id="settings-avatar-initial" class="font-headline-lg text-[32px] font-bold text-on-primary">A</span>
+            </div>
+            <!-- Camera Badge -->
+            <div aria-label="Ganti Foto" class="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-surface-container-highest text-on-surface shadow-md flex items-center justify-center border border-surface transition-transform group-hover:scale-110 active:scale-90">
+              <span class="material-symbols-outlined text-[16px]">photo_camera</span>
+            </div>
+            <input type="file" id="profile-photo-input" accept="image/*" class="hidden" onchange="handleProfilePhotoUpload(event)">
+          </div>
+
+          <!-- Photo Action Links -->
+          <div class="flex items-center gap-2 mt-2.5">
+            <button type="button" onclick="document.getElementById('profile-photo-input').click()" class="font-label-sm text-label-sm text-primary hover:underline flex items-center gap-1 active:scale-95 transition-all">
+              <span class="material-symbols-outlined text-[15px]">upload</span>
+              <span>Ganti Foto</span>
+            </button>
+            <span class="text-outline text-[12px]" id="profile-photo-separator" style="display: none;">•</span>
+            <button type="button" id="btn-remove-photo" onclick="removeProfilePhoto()" class="font-label-sm text-label-sm text-error hover:underline flex items-center gap-1 active:scale-95 transition-all" style="display: none;">
+              <span class="material-symbols-outlined text-[15px]">delete</span>
+              <span>Hapus Foto</span>
+            </button>
+          </div>
+
+          <!-- Edit Greeting Name -->
+          <div class="w-full mt-4 flex flex-col gap-1.5 text-left border-t border-surface-container pt-3">
+            <label for="input-profile-name" class="font-label-md text-label-md text-on-surface-variant font-semibold flex items-center justify-between">
+              <span>Nama Sapaan</span>
+              <span class="text-[11px] text-outline font-normal">Maks. 20 huruf</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <div class="flex-1 flex items-center px-4 h-12 bg-surface-container-low rounded-full focus-within:bg-surface-container border border-outline-variant/30 focus-within:border-primary transition-all">
+                <span class="material-symbols-outlined text-on-surface-variant text-[20px] mr-2">badge</span>
+                <input id="input-profile-name" type="text" maxlength="20" placeholder="Nama Anda (cth: Aishia)" value="Aishia" class="w-full bg-transparent border-0 outline-none font-body-md text-body-md text-on-surface placeholder:text-outline" onkeydown="if(event.key==='Enter'){event.preventDefault();saveProfileName();}"/>
+              </div>
+              <button type="button" id="btn-save-profile-name" onclick="saveProfileName()" class="h-12 px-5 rounded-full bg-primary text-on-primary font-label-md text-label-md flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all flex-shrink-0">
+                <span class="material-symbols-outlined text-[18px]">check</span>
+                <span>Simpan</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1. Laporan & Dokumen (Stage 2) -->
+        <div class="w-full flex flex-col gap-space-sm">
+          <div class="flex items-center justify-between px-1">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[22px]">description</span>
+              Laporan &amp; Dokumen
+            </h3>
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Format PDF</span>
+          </div>
+
+          <!-- Export PDF Card -->
+          <button class="w-full text-left bg-surface-container-lowest hover:bg-surface-container-low active:scale-[0.99] transition-all rounded-lg p-space-md shadow-sm flex items-center gap-space-md group" id="btn-open-pdf-modal" onclick="openPdfModal()" type="button">
+            <div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary flex-shrink-0 group-hover:scale-105 transition-transform">
+              <span class="material-symbols-outlined text-[26px]">picture_as_pdf</span>
+            </div>
+            <div class="flex flex-col min-w-0 flex-1">
+              <span class="font-label-lg text-label-lg text-on-surface">Ekspor Laporan PDF</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant truncate">Cetak ringkasan mingguan, bulanan, atau rentang tanggal</span>
+            </div>
+            <span class="material-symbols-outlined text-outline text-[22px] group-hover:translate-x-0.5 transition-transform flex-shrink-0">arrow_forward_ios</span>
+          </button>
+        </div>
+
+        <!-- 2. Cadangan & Pemulihan (JSON) -->
+        <div class="w-full flex flex-col gap-space-sm">
+          <div class="flex items-center justify-between px-1">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[22px]">database</span>
+              Cadangan &amp; Pemulihan
+            </h3>
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Format JSON</span>
+          </div>
+
+          <!-- Backup Reminder Card (Rule #8: > 7 hari atau belum pernah ekspor & ada data) -->
+          <div id="backup-reminder-card" class="hidden bg-tertiary-fixed/30 border border-tertiary-fixed-dim/60 rounded-lg p-space-md flex items-start justify-between gap-3 shadow-xs">
+            <div class="flex items-start gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed flex-shrink-0 mt-0.5">
+                <span class="material-symbols-outlined text-[20px]">notifications_active</span>
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="font-label-lg text-label-lg text-on-surface font-semibold">Waktunya Cadangkan Data</span>
+                <span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5" id="backup-reminder-desc">
+                  Amankan catatan transaksi keuanganmu ke file JSON lokal sekarang.
+                </span>
+                <button class="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm w-fit active:scale-95 transition-all shadow-xs" onclick="exportDataJson()" type="button">
+                  <span class="material-symbols-outlined text-[16px]">download</span>
+                  Cadangkan Sekarang
+                </button>
+              </div>
+            </div>
+            <button class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all flex-shrink-0" onclick="dismissBackupReminderCard()" aria-label="Tutup Pengingat" type="button">
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+
+          <!-- Export Button Card -->
+          <button class="w-full text-left bg-surface-container-lowest hover:bg-surface-container-low active:scale-[0.99] transition-all rounded-lg p-space-md shadow-sm flex items-center gap-space-md group" id="btn-export" onclick="exportDataJson()" type="button">
+            <div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed flex-shrink-0 group-hover:scale-105 transition-transform">
+              <span class="material-symbols-outlined text-[26px]">download</span>
+            </div>
+            <div class="flex flex-col min-w-0 flex-1">
+              <span class="font-label-lg text-label-lg text-on-surface">Ekspor Cadangan</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant truncate">Simpan seluruh catatan ke file JSON di perangkatmu</span>
+            </div>
+            <span class="material-symbols-outlined text-outline text-[22px] group-hover:translate-x-0.5 transition-transform flex-shrink-0">arrow_forward_ios</span>
+          </button>
+
+          <!-- Import Button Card -->
+          <button class="w-full text-left bg-surface-container-lowest hover:bg-surface-container-low active:scale-[0.99] transition-all rounded-lg p-space-md shadow-sm flex items-center gap-space-md group" id="btn-import" onclick="triggerImportJson()" type="button">
+            <div class="w-12 h-12 rounded-full bg-secondary-fixed-dim/40 flex items-center justify-center text-on-secondary-fixed-variant flex-shrink-0 group-hover:scale-105 transition-transform">
+              <span class="material-symbols-outlined text-[26px]">folder_open</span>
+            </div>
+            <div class="flex flex-col min-w-0 flex-1">
+              <span class="font-label-lg text-label-lg text-on-surface">Impor Cadangan</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant truncate">Pulihkan catatan dari file cadangan lokal sebelumnya</span>
+            </div>
+            <span class="material-symbols-outlined text-outline text-[22px] group-hover:translate-x-0.5 transition-transform flex-shrink-0">arrow_forward_ios</span>
+          </button>
+        </div>
+
+        <!-- 3. Tema & Tampilan (Stage 2) -->
+        <div class="w-full flex flex-col gap-space-sm">
+          <div class="flex items-center px-1">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+              <span class="material-symbols-outlined text-secondary text-[22px]">palette</span>
+              Tema Tampilan
+            </h3>
+          </div>
+          <div class="bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex flex-col gap-3">
+            <div class="grid grid-cols-3 gap-2">
+              <!-- Terang -->
+              <button type="button" id="theme-opt-light" onclick="selectTheme('light', event)" class="flex flex-col items-center justify-center p-3 rounded-DEFAULT border-2 border-outline-variant/40 hover:bg-surface-container-low active:scale-95 transition-all gap-1.5 relative text-on-surface">
+                <span class="material-symbols-outlined text-[24px]">light_mode</span>
+                <span class="font-label-md text-label-md">Terang</span>
+                <span id="theme-check-light" class="material-symbols-outlined text-[16px] text-primary absolute top-1.5 right-1.5 hidden">check_circle</span>
+              </button>
+              <!-- Gelap -->
+              <button type="button" id="theme-opt-dark" onclick="selectTheme('dark', event)" class="flex flex-col items-center justify-center p-3 rounded-DEFAULT border-2 border-outline-variant/40 hover:bg-surface-container-low active:scale-95 transition-all gap-1.5 relative text-on-surface">
+                <span class="material-symbols-outlined text-[24px]">dark_mode</span>
+                <span class="font-label-md text-label-md">Gelap</span>
+                <span id="theme-check-dark" class="material-symbols-outlined text-[16px] text-primary absolute top-1.5 right-1.5 hidden">check_circle</span>
+              </button>
+              <!-- Ikuti Sistem -->
+              <button type="button" id="theme-opt-system" onclick="selectTheme('system', event)" class="flex flex-col items-center justify-center p-3 rounded-DEFAULT border-2 border-outline-variant/40 hover:bg-surface-container-low active:scale-95 transition-all gap-1.5 relative text-on-surface">
+                <span class="material-symbols-outlined text-[24px]">devices</span>
+                <span class="font-label-md text-label-md">Sistem</span>
+                <span id="theme-check-system" class="material-symbols-outlined text-[16px] text-primary absolute top-1.5 right-1.5 hidden">check_circle</span>
+              </button>
+            </div>
+            <span class="font-body-sm text-body-sm text-on-surface-variant text-center">
+              Mode 'Sistem' otomatis mengikuti pengaturan tema di perangkat ponsel Anda.
+            </span>
+          </div>
+        </div>
+
+        <!-- App Preferences & Utilities -->
+        <div class="w-full flex flex-col gap-space-sm">
+          <div class="flex items-center px-1">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+              <span class="material-symbols-outlined text-tertiary text-[22px]">tune</span>
+              Preferensi &amp; Utilitas
+            </h3>
+          </div>
+          <div class="bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex flex-col gap-3">
+            <!-- Humor Indicator switch simulation -->
+            <div class="flex items-center justify-between py-1">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed flex-shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">sentiment_very_satisfied</span>
+                </div>
+                <div class="flex flex-col min-w-0">
+                  <span class="font-label-lg text-label-lg text-on-surface">Komentar Nyelekit</span>
+                  <span class="font-body-sm text-body-sm text-on-surface-variant truncate">Aktifkan ledekan saat pengeluaran tembus limit</span>
+                </div>
+              </div>
+              <button aria-label="Toggle Komentar" class="w-12 h-7 bg-primary rounded-full relative p-0.5 transition-colors focus:outline-none flex-shrink-0" id="toggle-roast" type="button">
+                <div class="w-6 h-6 bg-on-primary rounded-full shadow-md translate-x-5 transition-transform" id="toggle-pin"></div>
+              </button>
+            </div>
+
+            <!-- Currency Label format -->
+            <div class="w-full h-px bg-surface-container"></div>
+            <div class="flex items-center justify-between py-1">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface flex-shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">payments</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-label-lg text-label-lg text-on-surface">Mata Uang</span>
+                  <span class="font-body-sm text-body-sm text-on-surface-variant">Rupiah Indonesia (IDR)</span>
+                </div>
+              </div>
+              <span class="font-label-md text-label-md px-3 py-1 rounded-full bg-surface-container text-on-surface-variant">Rp</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger Zone Section -->
+        <div class="w-full flex flex-col gap-space-sm">
+          <div class="bg-surface-container-lowest rounded-lg p-space-md shadow-sm flex flex-col gap-3">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex flex-col min-w-0">
+                <span class="font-label-lg text-label-lg text-error font-semibold">Hapus Semua Data</span>
+                <span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+                  Menghapus seluruh transaksi, kategori kustom, dan riwayat boncos. Tindakan ini tidak bisa dibatalkan!
+                </span>
+              </div>
+            </div>
+            <button class="w-full h-[48px] rounded-full bg-error-container hover:bg-error/20 active:scale-[0.98] text-on-error-container font-label-lg text-label-lg flex items-center justify-center gap-2 transition-all" id="btn-delete-all" onclick="openDeleteConfirmModal()" type="button">
+              <span class="material-symbols-outlined text-[20px]">delete_forever</span>
+              Kosongkan Buku Kas
+            </button>
+          </div>
+        </div>
+
+        <!-- App Version Footer -->
+        <div class="w-full text-center py-4 text-on-surface-variant/60">
+          <span class="font-label-sm text-label-sm">Broke-o-meter v1.0 • Data tersimpan offline di ponsel</span>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- PINNED BOTTOM NAVIGATION (Attached strictly at the bottom of 430px mobile frame) -->
+    <nav class="mobile-nav-fixed pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_20px_-2px_rgba(43,40,37,0.06)] border-t border-surface-container/60" id="bottom-nav">
+      <div class="flex items-center justify-around h-16 px-margin">
+        <!-- Tab 1: Hari Ini -->
+        <button id="nav-btn-hari-ini" aria-current="page" class="nav-tab-btn flex flex-col items-center justify-center gap-0.5 w-20 h-12 rounded-full transition-all active:scale-95 text-primary font-bold" onclick="navigateToTab('hari-ini')">
+          <span class="material-symbols-outlined text-[24px]">calendar_today</span>
+          <span class="font-label-sm text-label-sm">Hari Ini</span>
+        </button>
+        <!-- Tab 2: Riwayat -->
+        <button id="nav-btn-riwayat" class="nav-tab-btn flex flex-col items-center justify-center gap-0.5 w-20 h-12 rounded-full text-on-surface-variant hover:text-on-surface transition-all active:scale-95" onclick="navigateToTab('riwayat')">
+          <span class="material-symbols-outlined text-[24px]">history</span>
+          <span class="font-label-sm text-label-sm">Riwayat</span>
+        </button>
+        <!-- Tab 3: Ringkasan -->
+        <button id="nav-btn-ringkasan" class="nav-tab-btn flex flex-col items-center justify-center gap-0.5 w-20 h-12 rounded-full text-on-surface-variant hover:text-on-surface transition-all active:scale-95" onclick="navigateToTab('ringkasan')">
+          <span class="material-symbols-outlined text-[24px]">pie_chart</span>
+          <span class="font-label-sm text-label-sm">Ringkasan</span>
+        </button>
+      </div>
+    </nav>
+
+  </div>
+
+  <!-- ==================== MODAL OVERLAYS (STRICTLY CONSTRAINED TO MOBILE) ==================== -->
+
+  <!-- 1. EDIT CATATAN BOTTOM SHEET (From Stitch Screen 7fbc98c2c3b94dc1a7b133c885edf6bc) -->
+  <div id="modalBackdrop" class="fixed inset-0 z-40 bg-inverse-surface/50 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none" onclick="hideEditModal()"></div>
+  <div id="bottomSheet" class="mobile-sheet-fixed flex flex-col bg-surface-container-lowest rounded-t-lg shadow-2xl transition-transform duration-300 pb-safe pointer-events-none" style="transform: translate(-50%, 100%);">
+    <!-- Visual Sheet Drag Handle -->
+    <div class="pt-3 pb-1 flex justify-center items-center cursor-grab active:cursor-grabbing">
+      <div class="w-12 h-1.5 bg-surface-container-highest rounded-full"></div>
+    </div>
+    <!-- Header Panel -->
+    <div class="px-margin py-space-sm flex items-center justify-between">
+      <div class="flex flex-col">
+        <h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Edit Pengeluaran</h2>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Koreksi dompet sebelum overthinking</span>
+      </div>
+      <button aria-label="Tutup sheet" class="w-11 h-11 rounded-full flex items-center justify-center bg-surface-container hover:bg-surface-container-high active:scale-95 text-on-surface transition-all" onclick="hideEditModal()" type="button">
+        <span class="material-symbols-outlined text-[22px]">close</span>
+      </button>
+    </div>
+    <!-- Sheet Form -->
+    <form class="px-margin pt-space-xs pb-space-md flex flex-col gap-space-md" id="editForm" onsubmit="event.preventDefault(); saveEditedItem();">
+      <input type="hidden" id="editItemId" value=""/>
+      <!-- Input: Nama Barang -->
+      <div class="flex flex-col gap-1.5">
+        <label class="font-label-md text-label-md text-on-surface-variant font-semibold" for="itemName">Nama Barang / Pengeluaran</label>
+        <div class="flex items-center px-space-md h-13 bg-surface-container-low rounded-DEFAULT focus-within:bg-surface-container transition-all">
+          <span class="material-symbols-outlined text-on-surface-variant text-[20px] mr-2">shopping_bag</span>
+          <input class="w-full bg-transparent border-0 outline-none font-body-lg text-body-lg text-on-surface placeholder:text-outline" id="itemName" type="text" value=""/>
+        </div>
+      </div>
+      <!-- Input: Harga -->
+      <div class="flex flex-col gap-1.5">
+        <label class="font-label-md text-label-md text-on-surface-variant font-semibold" for="itemAmount">Total Nominal</label>
+        <div class="flex items-center justify-between px-space-md h-14 bg-surface-container-low rounded-DEFAULT focus-within:bg-surface-container transition-all">
+          <span class="font-headline-md text-headline-md text-primary mr-1">Rp</span>
+          <input class="w-full bg-transparent border-0 outline-none font-headline-xl-mobile text-headline-xl-mobile text-on-surface text-right" id="itemAmount" inputmode="numeric" type="number" value=""/>
+        </div>
+      </div>
+      <!-- Input: Kategori -->
+      <div class="flex flex-col gap-2">
+        <label class="font-label-md text-label-md text-on-surface-variant font-semibold">Kategori Pengeluaran</label>
+        <div class="flex items-center gap-space-xs overflow-x-auto no-scrollbar py-1" id="edit-cat-chips">
+          <button class="edit-category-chip h-10 px-space-md rounded-full font-label-lg text-label-lg flex items-center gap-1.5 transition-all bg-primary-container text-on-primary shadow-sm active:scale-95 flex-shrink-0" data-cat="makan" onclick="selectEditCategory(this)" type="button">
+            <span>🍜</span><span>Makan</span>
+          </button>
+          <button class="edit-category-chip h-10 px-space-md rounded-full font-label-lg text-label-lg flex items-center gap-1.5 transition-all bg-surface-container text-on-surface-variant hover:bg-surface-container-high active:scale-95 flex-shrink-0" data-cat="minum" onclick="selectEditCategory(this)" type="button">
+            <span>🧋</span><span>Minum</span>
+          </button>
+          <button class="edit-category-chip h-10 px-space-md rounded-full font-label-lg text-label-lg flex items-center gap-1.5 transition-all bg-surface-container text-on-surface-variant hover:bg-surface-container-high active:scale-95 flex-shrink-0" data-cat="transport" onclick="selectEditCategory(this)" type="button">
+            <span>🛵</span><span>Transport</span>
+          </button>
+          <button class="edit-category-chip h-10 px-space-md rounded-full font-label-lg text-label-lg flex items-center gap-1.5 transition-all bg-surface-container text-on-surface-variant hover:bg-surface-container-high active:scale-95 flex-shrink-0" data-cat="lainnya" onclick="selectEditCategory(this)" type="button">
+            <span>✨</span><span>Lainnya</span>
+          </button>
+        </div>
+      </div>
+      <!-- Action Buttons -->
+      <div class="flex flex-col gap-space-xs pt-space-xs">
+        <button class="w-full h-13 min-h-[52px] bg-primary-container text-on-primary rounded-full font-label-lg text-label-lg shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-space-sm" id="saveBtn" onclick="saveEditedItem()" type="button">
+          <span class="material-symbols-outlined text-[20px]">check_circle</span>
+          <span>Simpan Perubahan</span>
+        </button>
+        <button class="w-full h-12 min-h-[48px] bg-error-container text-on-error-container rounded-full font-label-lg text-label-lg active:scale-[0.98] transition-all flex items-center justify-center gap-space-sm" id="deleteBtn" onclick="deleteFromEditModal()" type="button">
+          <span class="material-symbols-outlined text-[20px]">delete</span>
+          <span>Hapus Catatan</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 2. UNDUH PDF BOTTOM SHEET MODAL (From Stitch Screen 8c7b63486cb04cac90629d78797323cc) -->
+  <div id="pdf-bottom-sheet-backdrop" class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm flex flex-col justify-end transition-opacity duration-300 opacity-0 pointer-events-none" onclick="if(event.target === this) closePdfModal()">
+    <div class="mobile-sheet-fixed bg-surface-container-lowest rounded-t-lg pt-3 px-margin pb-safe shadow-[0_-8px_30px_rgba(0,0,0,0.12)] flex flex-col transition-transform duration-300 ease-out pointer-events-none" id="pdf-bottom-sheet-card" style="transform: translate(-50%, 100%);">
+      <div class="w-12 h-1.5 bg-surface-container-highest rounded-full mx-auto mb-3"></div>
+      <div class="flex items-center justify-between pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+          </div>
+          <div>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Unduh Laporan PDF</h2>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Pilih rentang data pengeluaran</p>
+          </div>
+        </div>
+        <button aria-label="Tutup modal" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all" onclick="closePdfModal()" type="button">
+          <span class="material-symbols-outlined text-[22px]">close</span>
+        </button>
+      </div>
+      <!-- Period Selection -->
+      <div class="flex flex-col gap-2.5 py-2" id="pdf-period-group">
+        <label class="pdf-radio-label flex items-center justify-between p-3.5 rounded-DEFAULT bg-primary-fixed/30 cursor-pointer active:scale-[0.99] transition-all" data-period="week" onclick="selectPdfPeriod(this, 'week')">
+          <div class="flex items-center gap-3">
+            <div class="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-on-primary">
+              <span class="material-symbols-outlined text-[14px]">check</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-label-lg text-label-lg text-on-surface font-bold">Minggu ini</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant" id="pdf-week-desc">Senin - Minggu Pekan Ini</span>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-primary text-[20px]">event_available</span>
+        </label>
+        <label class="pdf-radio-label flex items-center justify-between p-3.5 rounded-DEFAULT bg-surface-container-low hover:bg-surface-container cursor-pointer active:scale-[0.99] transition-all" data-period="month" onclick="selectPdfPeriod(this, 'month')">
+          <div class="flex items-center gap-3">
+            <div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center text-transparent">
+              <span class="material-symbols-outlined text-[14px]">check</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-label-lg text-label-lg text-on-surface">Bulan ini</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant" id="pdf-month-desc">Bulan Berjalan Lengkap</span>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant text-[20px]">calendar_month</span>
+        </label>
+        <label class="pdf-radio-label flex items-center justify-between p-3.5 rounded-DEFAULT bg-surface-container-low hover:bg-surface-container cursor-pointer active:scale-[0.99] transition-all" data-period="custom" onclick="selectPdfPeriod(this, 'custom')">
+          <div class="flex items-center gap-3">
+            <div class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center text-transparent">
+              <span class="material-symbols-outlined text-[14px]">check</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-label-lg text-label-lg text-on-surface">Pilih rentang tanggal</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">Tentukan tanggal mulai dan selesai</span>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant text-[20px]">date_range</span>
+        </label>
+      </div>
+
+      <!-- Custom Date Inputs (Muncul jika opsi 'Pilih rentang tanggal' dipilih) -->
+      <div id="pdf-custom-date-container" class="hidden flex-col gap-2 pt-1 pb-2">
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="flex flex-col gap-1">
+            <label class="font-label-sm text-label-sm text-on-surface-variant font-semibold" for="pdf-start-date">Dari Tanggal:</label>
+            <input type="date" id="pdf-start-date" class="w-full h-11 px-3 rounded bg-surface-container text-on-surface font-body-sm text-body-sm focus:outline-none focus:bg-surface-container-high transition-all"/>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="font-label-sm text-label-sm text-on-surface-variant font-semibold" for="pdf-end-date">Sampai Tanggal:</label>
+            <input type="date" id="pdf-end-date" class="w-full h-11 px-3 rounded bg-surface-container text-on-surface font-body-sm text-body-sm focus:outline-none focus:bg-surface-container-high transition-all"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-3 pt-3 pb-4">
+        <button class="w-1/3 h-[52px] rounded-full bg-surface-container text-on-surface font-label-lg text-label-lg active:scale-95 transition-all flex items-center justify-center" onclick="closePdfModal()" type="button">
+          Batal
+        </button>
+        <button class="w-2/3 h-[52px] rounded-full bg-primary-container text-on-primary font-headline-sm text-headline-sm shadow-[0_8px_24px_-4px_rgba(255,90,54,0.35)] active:scale-95 transition-all flex items-center justify-center gap-2" id="btn-download-pdf" onclick="handlePdfDownload()" type="button">
+          <span class="material-symbols-outlined text-[20px]">download</span>
+          <span>Unduh Laporan (PDF)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. MODAL KONFIRMASI IMPOR JSON (Stage 2: Replace vs Merge) -->
+  <div class="fixed inset-0 z-50 bg-inverse-surface/60 backdrop-blur-xs flex items-center justify-center p-margin hidden transition-opacity" id="modal-import-confirm">
+    <div class="bg-surface-container-lowest w-full max-w-sm rounded-lg p-space-lg shadow-xl flex flex-col items-center text-center gap-3">
+      <div class="w-14 h-14 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-[32px]">restore</span>
+      </div>
+      <h3 class="font-headline-md text-headline-md text-on-surface">Pulihkan Catatan Kas</h3>
+      <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+        Ditemukan <strong class="text-on-surface font-bold" id="import-entry-count">0</strong> transaksi pada file cadangan. Silakan tentukan bagaimana data ini dipulihkan:
+      </p>
+      <div class="flex flex-col w-full gap-2.5 mt-2">
+        <button class="w-full min-h-[48px] py-2.5 px-4 rounded-full bg-primary text-on-primary font-label-lg text-label-lg active:scale-95 transition-all shadow-sm flex items-center justify-center gap-2" id="btn-import-merge" onclick="executeImport('merge')" type="button">
+          <span class="material-symbols-outlined text-[20px]">merge</span>
+          <span>Gabungkan Catatan (Merge)</span>
+        </button>
+        <button class="w-full min-h-[48px] py-2.5 px-4 rounded-full bg-error-container text-on-error-container font-label-lg text-label-lg active:scale-95 transition-all flex items-center justify-center gap-2" id="btn-import-replace" onclick="executeImport('replace')" type="button">
+          <span class="material-symbols-outlined text-[20px]">sync</span>
+          <span>Ganti Semua Data (Replace)</span>
+        </button>
+        <button class="w-full h-[44px] rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-label-lg text-label-lg active:scale-95 transition-all mt-0.5" id="btn-import-cancel" onclick="closeImportConfirmModal()" type="button">
+          Batal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. RESET CONFIRMATION MODAL (From Stitch Screen b03794c9bf96428ca5ebda530522c4f9) -->
+  <div class="fixed inset-0 z-50 bg-inverse-surface/60 backdrop-blur-xs flex items-center justify-center p-margin hidden transition-opacity" id="modal-delete">
+    <div class="bg-surface-container-lowest w-full max-w-sm rounded-lg p-space-lg shadow-xl flex flex-col items-center text-center">
+      <div class="w-14 h-14 rounded-full bg-error-container text-on-error-container flex items-center justify-center mb-3">
+        <span class="material-symbols-outlined text-[32px]">delete_sweep</span>
+      </div>
+      <h3 class="font-headline-md text-headline-md text-on-surface mb-2">Yakin Mau Reset?</h3>
+      <p class="font-body-md text-body-md text-on-surface-variant mb-6">
+        Semua riwayat transaksi akan lenyap tanpa jejak. Catatan khilaf kopi dan boba kamu tidak akan terselamatkan lagi!
+      </p>
+      <div class="flex flex-col w-full gap-2.5">
+        <button class="w-full h-[48px] rounded-full bg-error text-on-error font-label-lg text-label-lg active:scale-95 transition-all shadow-md" id="btn-confirm-reset" onclick="confirmResetAll()" type="button">
+          Iya, Hapus Semuanya
+        </button>
+        <button class="w-full h-[48px] rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-label-lg text-label-lg active:scale-95 transition-all" id="btn-cancel-reset" onclick="closeDeleteConfirmModal()" type="button">
+          Batal, Masih Sayang Catatan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. FLOATING SNACKBAR / TOAST NOTIFICATION -->
+  <div class="mobile-toast-fixed flex items-center justify-between gap-space-sm bg-inverse-surface text-inverse-on-surface px-space-md py-3 rounded-full shadow-xl transition-all duration-300 transform translate-y-24 opacity-0 pointer-events-none" id="app-toast">
+    <div class="flex items-center gap-space-sm min-w-0">
+      <div class="w-7 h-7 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0" id="toast-icon-wrap">
+        <span class="material-symbols-outlined text-[18px]" id="toast-icon">check_circle</span>
+      </div>
+      <span class="font-body-md text-body-md text-inverse-on-surface truncate" id="toast-message">Notifikasi</span>
+    </div>
+    <div class="flex items-center gap-space-xs flex-shrink-0" id="toast-action-wrap">
+      <button class="hidden px-space-md py-1.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-lg text-label-lg tracking-wide active:scale-95 transition-all" id="toast-undo-btn" onclick="undoLastAction()" type="button">
+        Urungkan
+      </button>
+      <button aria-label="Tutup notifikasi" class="w-8 h-8 rounded-full flex items-center justify-center text-inverse-on-surface hover:bg-surface-variant/20 active:scale-95 transition-all" onclick="hideToast()" type="button">
+        <span class="material-symbols-outlined text-[18px]">close</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIC (ES Modules) -->
+  <script type="module" src="app.js"></script>
+  <script>
+    setTimeout(function() {
+      var vp = document.getElementById('mobile-viewport');
+      if (vp && vp.classList.contains('opacity-0')) {
+        vp.classList.remove('opacity-0');
+        vp.classList.add('opacity-100');
+      }
+    }, 350);
+  </script>
+</body>
+</html>

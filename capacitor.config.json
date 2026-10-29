@@ -1,0 +1,13 @@
+{
+  "appId": "com.brokeometer.app",
+  "appName": "Broke-o-meter",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": false
+    }
+  }
+}

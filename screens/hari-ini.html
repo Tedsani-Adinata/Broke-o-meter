@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+  <meta content="mobile_tab" name="shell-type"/>
+  <title>Broke-o-meter - Hari Ini</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = { darkMode: "class", theme: { extend: { colors: { "error-container": "#ffdad6", "surface": "#fff8f4", "secondary": "#006a62", "primary-fixed-dim": "#ffb4a3", "surface-container-highest": "#e8e1dc", "on-secondary": "#ffffff", "inverse-primary": "#ffb4a3", "primary": "#b52603", "on-primary-fixed": "#3d0600", "on-tertiary": "#ffffff", "on-secondary-fixed-variant": "#005049", "surface-bright": "#fff8f4", "inverse-surface": "#33302d", "background": "#fff8f4", "on-primary-fixed-variant": "#8c1900", "on-tertiary-fixed": "#271900", "surface-container": "#f4ece7", "primary-fixed": "#ffdad2", "outline": "#8f7069", "secondary-fixed": "#70f8e8", "on-tertiary-fixed-variant": "#5e4100", "surface-container-high": "#eee7e2", "surface-variant": "#e8e1dc", "on-background": "#1e1b18", "on-surface-variant": "#5b403a", "on-secondary-fixed": "#00201d", "on-primary-container": "#5a0c00", "surface-container-low": "#faf2ed", "outline-variant": "#e3beb6", "primary-container": "#ff5a36", "tertiary-fixed-dim": "#ffba27", "tertiary-fixed": "#ffdea9", "on-tertiary-container": "#3b2700", "error": "#ba1a1a", "on-error-container": "#93000a", "on-secondary-container": "#007168", "surface-dim": "#e0d9d4", "surface-container-lowest": "#ffffff", "on-error": "#ffffff", "surface-tint": "#b52603", "tertiary-container": "#bf8800", "secondary-fixed-dim": "#4fdbcc", "on-surface": "#1e1b18", "secondary-container": "#70f8e8", "tertiary": "#7d5800", "inverse-on-surface": "#f7efea", "on-primary": "#ffffff" }, borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, spacing: { "space-sm": "0.5rem", "space-lg": "1.5rem", "margin": "1.25rem", "space-xl": "2rem", "gutter": "1rem", "space-md": "1rem", "space-xs": "0.25rem" }, fontFamily: { "headline-sm": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-xl": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "headline-xl-mobile": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"] }, fontSize: { "headline-sm": ["18px", { lineHeight: "24px", letterSpacing: "-0.01em", fontWeight: "600" }], "body-lg": ["16px", { lineHeight: "24px", fontWeight: "500" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }], "headline-xl": ["40px", { lineHeight: "48px", letterSpacing: "-0.03em", fontWeight: "800" }], "headline-md": ["20px", { lineHeight: "26px", letterSpacing: "-0.015em", fontWeight: "700" }], "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "headline-lg": ["26px", { lineHeight: "32px", letterSpacing: "-0.02em", fontWeight: "700" }], "label-lg": ["14px", { lineHeight: "18px", letterSpacing: "0.01em", fontWeight: "700" }], "label-sm": ["10px", { lineHeight: "14px", letterSpacing: "0.04em", fontWeight: "700" }], "headline-xl-mobile": ["32px", { lineHeight: "38px", letterSpacing: "-0.025em", fontWeight: "800" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }] } } } };
+  </script>
+  <style>
+    @layer base {
+      html, body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background-color: #26292e;
+        overscroll-behavior: none;
+      }
+      .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      .pt-safe {
+        padding-top: env(safe-area-inset-top, 0px);
+      }
+      main > :first-child {
+        margin-top: 0 !important;
+      }
+      main > :last-child {
+        margin-bottom: 0 !important;
+      }
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="flex justify-center min-h-screen">
+  <div class="relative w-full max-w-[430px] min-h-screen bg-surface font-body-md text-on-surface shadow-2xl flex flex-col overflow-x-hidden">
+    
+    <header class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-surface/85 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+      <div class="h-16 px-margin flex items-center justify-between gap-space-sm">
+        <div class="flex items-center gap-space-sm min-w-0">
+          <img alt="Broke-o-meter Logo" class="h-8 w-auto object-contain flex-shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1W7UoyRM9C5k7Q-BYP6TZxptxkixhfMH-QU8CVQfqRE-WwOCEvouR6fOFjOPTRuk7pjh3MvyY2dMIP4mjovt7cTWx0G1ArxoJhaBS7EWY0ZegpAqDTTwaaNoRl4T72PIli8ApYhQJEOct7KJEDreoXh0SYi0SWCmW3qq3RuITGkGFRySF3IunX8ya-iJHR9bZuJnBdIU5uNTi82jvd1IGh2XpmOxKLspFuq99dxp2uUO-DSNQTECeVFAQ"/>
+          <div class="flex flex-col min-w-0">
+            <span class="font-headline-md text-headline-md tracking-tight text-on-surface truncate">Broke-o-meter</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button id="header-btn-theme-toggle" aria-label="Ganti Tema" class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container/60 hover:bg-surface-container active:scale-95 text-on-surface-variant transition-all flex-shrink-0">
+            <span class="material-symbols-outlined text-[20px]" id="theme-toggle-icon">dark_mode</span>
+          </button>
+          <a aria-label="Pengaturan" class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container/60 hover:bg-surface-container active:scale-95 text-on-surface-variant transition-all flex-shrink-0" href="pengaturan.html">
+            <span class="material-symbols-outlined text-[20px]">settings</span>
+          </a>
+          <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center overflow-hidden border-2 border-surface flex-shrink-0 shadow-sm">
+            <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex flex-col relative w-full pt-16 pb-28 bg-surface min-h-screen">
+      <div class="flex flex-col w-full px-margin space-y-space-lg">
+        <div class="flex flex-col space-y-space-xs pt-space-md">
+          <div class="flex items-center">
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Senin, 12 Oktober 2026</span>
+          </div>
+          <h1 class="font-headline-md text-headline-md text-on-surface tracking-tight">
+            Halo, pejuang rupiah! ☕
+          </h1>
+        </div>
+
+        <div class="rounded-lg bg-surface-container-lowest p-space-lg shadow-sm">
+          <div class="flex flex-col space-y-space-sm">
+            <div class="flex items-center justify-between">
+              <span class="font-label-md text-label-md text-on-surface-variant font-semibold">TOTAL HARI INI</span>
+              <span class="material-symbols-outlined text-primary text-[20px]">account_balance_wallet</span>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="font-headline-xl-mobile text-headline-xl-mobile text-primary tracking-tight" id="display-total">
+                Rp 13.000
+              </span>
+            </div>
+            <div class="w-full bg-surface-container rounded-full h-2.5 overflow-hidden my-1">
+              <div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 22%"></div>
+            </div>
+            <div class="flex items-start gap-2 pt-1">
+              <span class="text-base leading-none">💸</span>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">
+                Aman, dompetmu belum menangis keras hari ini... tapi tetap waspada!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-lg bg-surface-container-lowest p-space-lg shadow-sm space-y-space-md">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed">
+              <span class="material-symbols-outlined text-[16px]">bolt</span>
+            </div>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Tambah Cepat</h2>
+          </div>
+
+          <div class="space-y-space-sm">
+            <label class="block font-label-md text-label-md text-on-surface font-semibold" for="item-name">Nama Barang</label>
+            <div class="relative">
+              <input class="w-full h-12 px-4 rounded bg-surface-container text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:bg-surface-container-high transition-all" id="item-name" placeholder="Misal: Kopi susu gula aren" type="text"/>
+            </div>
+          </div>
+
+          <div class="space-y-space-sm">
+            <label class="block font-label-md text-label-md text-on-surface font-semibold" for="item-price">Harga</label>
+            <div class="relative flex items-center">
+              <span class="absolute left-4 font-headline-sm text-headline-sm text-on-surface-variant">Rp</span>
+              <input class="w-full h-12 pl-12 pr-4 rounded bg-surface-container text-on-surface font-headline-sm text-headline-sm placeholder:text-outline focus:outline-none focus:bg-surface-container-high transition-all" id="item-price" inputmode="numeric" placeholder="0" type="number"/>
+            </div>
+          </div>
+
+          <div class="space-y-space-sm">
+            <label class="block font-label-md text-label-md text-on-surface font-semibold">Kategori</label>
+            <div class="grid grid-cols-2 gap-2" id="category-chips">
+              <button class="cat-chip flex items-center justify-center gap-1.5 h-11 px-3 rounded-full bg-surface-container text-on-surface font-label-md text-label-md active:scale-95 transition-all" data-cat="makan" onclick="selectCategory(this)" type="button">
+                <span>🍜</span> Makan
+              </button>
+              <button class="cat-chip flex items-center justify-center gap-1.5 h-11 px-3 rounded-full bg-primary text-on-primary font-label-md text-label-md shadow-sm active:scale-95 transition-all" data-cat="minum" onclick="selectCategory(this)" type="button">
+                <span>🧋</span> Minum
+              </button>
+              <button class="cat-chip flex items-center justify-center gap-1.5 h-11 px-3 rounded-full bg-surface-container text-on-surface font-label-md text-label-md active:scale-95 transition-all" data-cat="transport" onclick="selectCategory(this)" type="button">
+                <span>🛵</span> Transport
+              </button>
+              <button class="cat-chip flex items-center justify-center gap-1.5 h-11 px-3 rounded-full bg-surface-container text-on-surface font-label-md text-label-md active:scale-95 transition-all" data-cat="lainnya" onclick="selectCategory(this)" type="button">
+                <span>✨</span> Lainnya
+              </button>
+            </div>
+          </div>
+
+          <button class="w-full h-13 py-3.5 rounded-full bg-primary-container text-on-primary font-label-lg text-label-lg tracking-wide uppercase shadow-md hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2" id="btn-simpan" onclick="handleSave()" type="button">
+            <span class="material-symbols-outlined text-[20px]">add_circle</span>
+            <span>Simpan Catatan</span>
+          </button>
+        </div>
+
+        <div class="space-y-space-sm">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="font-headline-sm text-headline-sm text-on-surface">Catatan Hari Ini</h2>
+            <span class="font-label-sm text-label-sm text-on-surface-variant" id="entry-count-badge">(2 pengeluaran)</span>
+          </div>
+
+          <div class="flex flex-col gap-2" id="transaction-list">
+            <div class="transaction-item flex items-center justify-between p-3.5 rounded bg-surface-container-lowest shadow-sm transition-all duration-300">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-full bg-tertiary-fixed flex items-center justify-center text-on-tertiary-container flex-shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">local_cafe</span>
+                </div>
+                <div class="flex flex-col min-w-0">
+                  <span class="font-body-lg text-body-lg text-on-surface font-bold truncate">Es teh</span>
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-label-sm text-label-sm text-on-surface-variant">Minuman</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="font-headline-sm text-headline-sm text-on-surface mr-1">-Rp 3.000</span>
+                <a aria-label="Edit Es teh" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all" href="edit-catatan.html">
+                  <span class="material-symbols-outlined text-[20px]">edit</span>
+                </a>
+                <button aria-label="Hapus Es teh" class="w-11 h-11 flex items-center justify-center rounded-full text-error hover:bg-error-container active:scale-95 transition-all" onclick="deleteItem(this, 3000)" type="button">
+                  <span class="material-symbols-outlined text-[20px]">delete</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="transaction-item flex items-center justify-between p-3.5 rounded bg-surface-container-lowest shadow-sm transition-all duration-300">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed flex-shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">restaurant</span>
+                </div>
+                <div class="flex flex-col min-w-0">
+                  <span class="font-body-lg text-body-lg text-on-surface font-bold truncate">Ayam goreng</span>
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-label-sm text-label-sm text-on-surface-variant">Makan Siang</span>
+                    <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+                    <span class="font-label-sm text-label-sm text-primary font-medium">Biar Gak Masuk Angin</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="font-headline-sm text-headline-sm text-on-surface mr-1">-Rp 10.000</span>
+                <a aria-label="Edit Ayam goreng" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all" href="edit-catatan.html">
+                  <span class="material-symbols-outlined text-[20px]">edit</span>
+                </a>
+                <button aria-label="Hapus Ayam goreng" class="w-11 h-11 flex items-center justify-center rounded-full text-error hover:bg-error-container active:scale-95 transition-all" onclick="deleteItem(this, 10000)" type="button">
+                  <span class="material-symbols-outlined text-[20px]">delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_20px_-2px_rgba(43,40,37,0.06)] border-t border-surface-container/60">
+      <div class="flex items-center justify-around h-16 px-margin">
+        <a aria-current="page" class="flex flex-col items-center justify-center gap-0.5 w-20 h-12 rounded-full transition-all active:scale-95 text-primary font-bold" href="hari-ini.html">
+          <span class="material-symbols-outlined text-[24px]">calendar_today</span>
+          <span class="font-label-sm text-label-sm">Hari Ini</span>
+        </a>
+        <a class="flex flex-col items-center justify-center gap-0.5 w-20 h-12 rounded-full text-on-surface-variant hover:text-on-surface transition-all active:scale-95" href="riwayat.html">
+          <span class="material-symbols-outlined text-[24px]">history</span>
+          <span class="font-label-sm text-label-sm">Riwayat</span>
+        </a>
+        <a class="flex flex-col items-center justify-center gap-0.5 w-20 h-12 rounded-full text-on-surface-variant hover:text-on-surface transition-all active:scale-95" href="ringkasan.html">
+          <span class="material-symbols-outlined text-[24px]">pie_chart</span>
+          <span class="font-label-sm text-label-sm">Ringkasan</span>
+        </a>
+      </div>
+    </nav>
+
+  </div>
+
+  <script>
+    let currentTotal = 13000;
+    let totalCount = 2;
+
+    function fillSuggestion(name) {
+      const nameInput = document.getElementById('item-name');
+      nameInput.value = name;
+      nameInput.focus();
+    }
+
+    function selectCategory(button) {
+      const chips = document.querySelectorAll('.cat-chip');
+      chips.forEach(chip => {
+        chip.className = 'cat-chip flex items-center justify-center gap-1.5 h-11 px-3 rounded-full bg-surface-container text-on-surface font-label-md text-label-md active:scale-95 transition-all';
+      });
+      button.className = 'cat-chip flex items-center justify-center gap-1.5 h-11 px-3 rounded-full bg-primary text-on-primary font-label-md text-label-md shadow-sm active:scale-95 transition-all';
+    }
+
+    function deleteItem(btn, amount) {
+      const card = btn.closest('.transaction-item');
+      if (!card) return;
+      card.classList.add('opacity-0', 'scale-95');
+      setTimeout(() => {
+        card.remove();
+        currentTotal = Math.max(0, currentTotal - amount);
+        totalCount = Math.max(0, totalCount - 1);
+        document.getElementById('display-total').innerText = 'Rp ' + currentTotal.toLocaleString('id-ID');
+        document.getElementById('entry-count-badge').innerText = '(' + totalCount + ' pengeluaran)';
+      }, 200);
+    }
+
+    function handleSave() {
+      const nameInput = document.getElementById('item-name');
+      const priceInput = document.getElementById('item-price');
+      const name = nameInput.value.trim();
+      const priceVal = parseInt(priceInput.value, 10);
+      if (!name || isNaN(priceVal) || priceVal <= 0) {
+        nameInput.focus();
+        return;
+      }
+      currentTotal += priceVal;
+      totalCount += 1;
+      document.getElementById('display-total').innerText = 'Rp ' + currentTotal.toLocaleString('id-ID');
+      document.getElementById('entry-count-badge').innerText = '(' + totalCount + ' pengeluaran)';
+      const list = document.getElementById('transaction-list');
+      const newItem = document.createElement('div');
+      newItem.className = 'transaction-item flex items-center justify-between p-3.5 rounded bg-surface-container-lowest shadow-sm transition-all duration-300';
+      newItem.innerHTML = `
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-on-surface flex-shrink-0">
+            <span class="text-xl">✨</span>
+          </div>
+          <div class="flex flex-col min-w-0">
+            <span class="font-body-lg text-body-lg text-on-surface font-bold truncate">${name}</span>
+            <div class="flex items-center gap-1.5">
+              <span class="font-label-sm text-label-sm text-on-surface-variant">Baru</span>
+              <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+              <span class="font-label-sm text-label-sm text-primary font-medium">Tercatat!</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <span class="font-headline-sm text-headline-sm text-on-surface mr-1">-Rp ${priceVal.toLocaleString('id-ID')}</span>
+          <button type="button" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-[20px]">edit</span>
+          </button>
+          <button type="button" onclick="deleteItem(this, ${priceVal})" class="w-11 h-11 flex items-center justify-center rounded-full text-error hover:bg-error-container active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-[20px]">delete</span>
+          </button>
+        </div>
+      `;
+      list.prepend(newItem);
+      nameInput.value = '';
+      priceInput.value = '';
+    }
+  </script>
+</body>
+</html>

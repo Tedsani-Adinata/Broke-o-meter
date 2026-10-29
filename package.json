@@ -1,0 +1,45 @@
+{
+  "name": "broke-o-meter",
+  "version": "1.0.0",
+  "description": "Aplikasi pencatat pengeluaran harian offline-first dengan indikator level boncos, ekspor PDF, backup JSON, dan integrasi Android via Capacitor.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node server.js",
+    "build:css": "tailwindcss -i ./css/input.css -o ./css/styles.css --minify",
+    "copy:www": "node sync-www.js",
+    "build": "npm run build:css && node sync-www.js",
+    "sync": "npm run build && npx cap sync android",
+    "build:apk": "npm run sync && cd android && powershell -Command \"if (-not $env:JAVA_HOME) { $env:JAVA_HOME = 'C:\\Program Files\\Microsoft\\jdk-21.0.12.101-hotspot'; $env:Path = \\\"$env:JAVA_HOME\\bin;$env:Path\\\" }; .\\gradlew.bat assembleDebug\"",
+    "open:android": "npx cap open android"
+  },
+  "keywords": [
+    "expense-tracker",
+    "pencatat-keuangan",
+    "offline-first",
+    "capacitor",
+    "android",
+    "tailwind-css",
+    "jspdf"
+  ],
+  "author": "Tedsani",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/filesystem": "^8.1.4",
+    "@capacitor/screen-orientation": "^8.0.2",
+    "@capacitor/share": "^8.0.3",
+    "@capacitor/status-bar": "^8.0.4",
+    "@fontsource/plus-jakarta-sans": "^5.3.0",
+    "@tailwindcss/cli": "^4.3.3",
+    "jspdf": "^4.2.1",
+    "material-symbols": "^0.48.0",
+    "motion": "^14.1.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
+    "tailwindcss": "^3.4.19"
+  }
+}

@@ -1,0 +1,309 @@
+/* ==================== FONT LOKAL OFFLINE ==================== */
+/* Plus Jakarta Sans (Bobot 400, 500, 600, 700, 800) */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/plus-jakarta-sans-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/plus-jakarta-sans-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('../fonts/plus-jakarta-sans-latin-800-normal.woff2') format('woff2');
+}
+
+/* Material Symbols Outlined Lokal */
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: block;
+  src: url('../fonts/material-symbols-outlined.woff2') format('woff2');
+}
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'liga';
+}
+
+/* ==================== TAILWIND DIRECTIVES ==================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==================== PALET CSS VARIABLES & TEMA ==================== */
+:root {
+  --color-surface: 255 248 244;
+  --color-surface-container: 244 236 231;
+  --color-surface-container-low: 250 242 237;
+  --color-surface-container-high: 238 231 226;
+  --color-surface-container-highest: 232 225 220;
+  --color-surface-container-lowest: 255 255 255;
+  --color-surface-variant: 232 225 220;
+  --color-surface-dim: 224 217 212;
+  --color-surface-bright: 255 248 244;
+  --color-on-surface: 30 27 24;
+  --color-on-surface-variant: 91 64 58;
+  --color-inverse-surface: 51 48 45;
+  --color-inverse-on-surface: 247 239 234;
+  --color-background: 255 248 244;
+  --color-on-background: 30 27 24;
+
+  --color-primary: 181 38 3;
+  --color-primary-container: 255 90 54;
+  --color-on-primary: 255 255 255;
+  --color-on-primary-container: 90 12 0;
+  --color-primary-fixed: 255 218 210;
+  --color-primary-fixed-dim: 255 180 163;
+  --color-on-primary-fixed: 61 6 0;
+  --color-on-primary-fixed-variant: 140 25 0;
+  --color-inverse-primary: 255 180 163;
+  --color-surface-tint: 181 38 3;
+
+  --color-secondary: 0 106 98;
+  --color-secondary-container: 112 248 232;
+  --color-on-secondary: 255 255 255;
+  --color-on-secondary-container: 0 113 104;
+  --color-secondary-fixed: 112 248 232;
+  --color-secondary-fixed-dim: 79 219 204;
+  --color-on-secondary-fixed: 0 32 29;
+  --color-on-secondary-fixed-variant: 0 80 73;
+
+  --color-tertiary: 125 88 0;
+  --color-tertiary-container: 191 136 0;
+  --color-on-tertiary: 255 255 255;
+  --color-on-tertiary-container: 59 39 0;
+  --color-tertiary-fixed: 255 222 169;
+  --color-tertiary-fixed-dim: 255 186 39;
+  --color-on-tertiary-fixed: 39 25 0;
+  --color-on-tertiary-fixed-variant: 94 65 0;
+
+  --color-error: 186 26 26;
+  --color-error-container: 255 218 214;
+  --color-on-error: 255 255 255;
+  --color-on-error-container: 147 0 10;
+
+  --color-outline: 143 112 105;
+  --color-outline-variant: 227 190 182;
+}
+
+.dark {
+  --color-surface: 26 22 20;
+  --color-surface-container: 49 43 39;
+  --color-surface-container-low: 40 35 32;
+  --color-surface-container-high: 59 52 47;
+  --color-surface-container-highest: 69 62 57;
+  --color-surface-container-lowest: 33 28 25;
+  --color-surface-variant: 69 62 57;
+  --color-surface-dim: 19 16 14;
+  --color-surface-bright: 39 34 31;
+  --color-on-surface: 244 236 231;
+  --color-on-surface-variant: 213 195 189;
+  --color-inverse-surface: 244 236 231;
+  --color-inverse-on-surface: 30 27 24;
+  --color-background: 26 22 20;
+  --color-on-background: 244 236 231;
+
+  --color-primary: 255 139 113;
+  --color-primary-container: 181 38 3;
+  --color-on-primary: 92 18 0;
+  --color-on-primary-container: 255 218 210;
+  --color-primary-fixed: 77 16 0;
+  --color-primary-fixed-dim: 140 25 0;
+  --color-on-primary-fixed: 255 218 210;
+  --color-on-primary-fixed-variant: 255 180 163;
+  --color-inverse-primary: 181 38 3;
+  --color-surface-tint: 255 139 113;
+
+  --color-secondary: 79 219 204;
+  --color-secondary-container: 0 80 73;
+  --color-on-secondary: 0 55 50;
+  --color-on-secondary-container: 112 248 232;
+  --color-secondary-fixed: 0 55 50;
+  --color-secondary-fixed-dim: 0 80 73;
+  --color-on-secondary-fixed: 112 248 232;
+  --color-on-secondary-fixed-variant: 79 219 204;
+
+  --color-tertiary: 255 186 39;
+  --color-tertiary-container: 94 65 0;
+  --color-on-tertiary: 66 44 0;
+  --color-on-tertiary-container: 255 222 169;
+  --color-tertiary-fixed: 59 39 0;
+  --color-tertiary-fixed-dim: 125 88 0;
+  --color-on-tertiary-fixed: 255 222 169;
+  --color-on-tertiary-fixed-variant: 255 186 39;
+
+  --color-error: 255 180 171;
+  --color-error-container: 147 0 10;
+  --color-on-error: 105 0 5;
+  --color-on-error-container: 255 218 214;
+
+  --color-outline: 158 138 131;
+  --color-outline-variant: 82 68 64;
+}
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    background-color: #26292e; /* Latar abu-abu di desktop */
+    overscroll-behavior: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  main > :first-child {
+    margin-top: 0 !important;
+  }
+  main > :last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Mobile-first frame container constraint */
+#mobile-viewport {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+  background-color: rgb(var(--color-surface));
+  color: rgb(var(--color-on-surface));
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.45);
+  margin: 0 auto;
+  overflow-x: hidden;
+}
+
+/* Pinned header & bottom navigation anchored strictly inside 430px container */
+.mobile-header-fixed {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  z-index: 40;
+}
+.mobile-nav-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  z-index: 40;
+}
+.mobile-sheet-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 100%);
+  width: 100%;
+  max-width: 430px;
+  z-index: 50;
+  will-change: transform;
+}
+.mobile-toast-fixed {
+  position: fixed;
+  bottom: 5.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 2.5rem);
+  max-width: 390px;
+  z-index: 60;
+}
+
+/* ==================== THEME VIEW TRANSITION (SMOOTH GPU CROSSFADE) ==================== */
+/* Matikan transisi individual saat peralihan tema agar tidak membebani GPU */
+.theme-transitioning,
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition: none !important;
+}
+
+::view-transition-group(root) {
+  animation-duration: 0.28s;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+::view-transition-old(root) {
+  animation: 0.28s cubic-bezier(0.2, 0, 0, 1) both theme-fade-out;
+  mix-blend-mode: normal;
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  animation: 0.28s cubic-bezier(0.2, 0, 0, 1) both theme-fade-in;
+  mix-blend-mode: normal;
+  z-index: 2;
+}
+
+@keyframes theme-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes theme-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Fallback utility for rounded-DEFAULT */
+.rounded-DEFAULT {
+  border-radius: 1rem;
+}
+

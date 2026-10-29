@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Broke-o-meter</string>
+    <string name="title_activity_main">Broke-o-meter</string>
+    <string name="package_name">com.brokeometer.app</string>
+    <string name="custom_url_scheme">com.brokeometer.app</string>
+</resources>
